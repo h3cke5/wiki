@@ -1,26 +1,15 @@
-import { getDB } from "../../../lib/db";
-import { ObjectId } from "mongodb";
+import clientPromise from "../../../lib/db";
 
 export default async function handler(req, res) {
-  const { q = "", tag = "" } = req.query || {};
-  const db = await getDB();
+  const { q = "", tag = "" } = req.query;
+  const client = await clientPromise;
+  const db = client.db("wiki");
 
-  const match = { status: "approved" };
-  if (tag) match.category = tag;
+  const query = { approved: true };
+  if (tag) query.category = tag;
+  if (q) query.title = { $regex: q, $options: "i" };
 
-  if (q) {
-    match.$or = [
-      { title: { $regex: q, $options: "i" } },
-      { content: { $regex: q, $options: "i" } }
-    ];
-  }
+  const wikis = await db.collection("wikis").find(query).sort({ createdAt: -1 }).toArray();
 
-  const docs = await db
-    .collection("wikis")
-    .find(match)
-    .project({ title: 1, category: 1, createdAt: 1 })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  return res.status(200).json({ ok: true, items: docs });
+  res.json({ ok: true, items: wikis });
 }
