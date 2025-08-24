@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fonte limpa e moderna */
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
+  background-color: #f3f4f6;
   color: #111827;
 }
