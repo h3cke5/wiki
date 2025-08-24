@@ -23,4 +23,3 @@ export default async function handler(req, res) {
     slug: doc.slug || null
   });
 }
-a
