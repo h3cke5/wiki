@@ -1,59 +1,62 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const TAGS = ["", "DJs", "BDFD", "AOI", "HTML"];
-
 export default function Home() {
-  const [items, setItems] = useState([]);
-  const [q, setQ] = useState("");
+  const [query, setQuery] = useState("");
   const [tag, setTag] = useState("");
+  const [wikis, setWikis] = useState([]);
 
-  async function fetchData(params = {}) {
-    const url = new URL("/api/wiki/list", window.location.origin);
-    if (params.q) url.searchParams.set("q", params.q);
-    if (params.tag) url.searchParams.set("tag", params.tag);
-    const r = await fetch(url);
-    const j = await r.json();
-    if (j.ok) setItems(j.items);
-  }
-
-  useEffect(() => { fetchData({ q, tag }); }, [q, tag]);
+  useEffect(() => {
+    (async () => {
+      const r = await fetch(`/api/wiki/list?q=${query}&tag=${tag}`);
+      const j = await r.json();
+      if (j.ok) setWikis(j.items);
+    })();
+  }, [query, tag]);
 
   return (
-    <main style={{ padding: "2rem", maxWidth: 900, margin: "0 auto", fontFamily: "system-ui, sans-serif" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h1 style={{ margin: 0 }}>Wikis</h1>
-        <nav style={{ display: "flex", gap: 12 }}>
-          <Link href="/submit">Enviar Wiki</Link>
-          <Link href="/admin">Admin</Link>
-        </nav>
-      </header>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">📚 Wiki Explorer</h1>
 
-      <section style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+      {/* Filtros */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por título ou conteúdo..."
-          style={{ flex: 1, padding: 8 }}
+          type="text"
+          placeholder="🔍 Buscar..."
+          className="flex-1 border p-2 rounded-md shadow-sm"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
         />
-        <select value={tag} onChange={(e) => setTag(e.target.value)} style={{ padding: 8 }}>
-          {TAGS.map((t) => (
-            <option key={t || "todas"} value={t}>{t || "Todas"}</option>
-          ))}
+        <select
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
+          className="border p-2 rounded-md shadow-sm"
+        >
+          <option value="">Todas as categorias</option>
+          <option value="DJs">DJs</option>
+          <option value="BDFD">BDFD</option>
+          <option value="AOI">AOI</option>
+          <option value="HTML">HTML</option>
         </select>
-      </section>
+      </div>
 
-      <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 12 }}>
-        {items.map((w) => (
-          <li key={w._id} style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 16 }}>
-            <h3 style={{ margin: "0 0 4px" }}>
-              <Link href={`/wiki/${w._id}`}>{w.title}</Link>
-            </h3>
-            <small style={{ opacity: 0.7 }}>{w.category} • {new Date(w.createdAt).toLocaleString()}</small>
-          </li>
+      {/* Lista */}
+      <div className="grid gap-4">
+        {wikis.map((wiki) => (
+          <Link key={wiki._id} href={`/wiki/${wiki._id}`}>
+            <div className="p-4 border rounded-xl shadow hover:shadow-md transition cursor-pointer bg-white">
+              <h2 className="text-xl font-semibold">{wiki.title}</h2>
+              <p className="text-sm text-gray-600">
+                {wiki.category} • {new Date(wiki.createdAt).toLocaleDateString()}
+              </p>
+              <p className="mt-2 text-gray-700 line-clamp-2">{wiki.content}</p>
+            </div>
+          </Link>
         ))}
-        {items.length === 0 && <p>Nenhuma wiki encontrada.</p>}
-      </ul>
+        {wikis.length === 0 && (
+          <p className="text-center text-gray-500">Nenhuma wiki encontrada</p>
+        )}
+      </div>
     </main>
   );
 }
