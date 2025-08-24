@@ -15,22 +15,21 @@ export default function Home() {
   }, [query, tag]);
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">📚 Wiki Explorer</h1>
+    <main className="max-w-5xl mx-auto p-6">
+      <h1 className="text-4xl font-extrabold text-center text-blue-600 mb-8">📚 Wiki Explorer</h1>
 
-      {/* Filtros */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
         <input
           type="text"
           placeholder="🔍 Buscar..."
-          className="flex-1 border p-2 rounded-md shadow-sm"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 border p-3 rounded-lg shadow focus:ring-2 focus:ring-blue-400"
         />
         <select
           value={tag}
           onChange={(e) => setTag(e.target.value)}
-          className="border p-2 rounded-md shadow-sm"
+          className="border p-3 rounded-lg shadow focus:ring-2 focus:ring-blue-400"
         >
           <option value="">Todas as categorias</option>
           <option value="DJs">DJs</option>
@@ -40,22 +39,17 @@ export default function Home() {
         </select>
       </div>
 
-      {/* Lista */}
-      <div className="grid gap-4">
+      <div className="grid gap-6 md:grid-cols-2">
         {wikis.map((wiki) => (
           <Link key={wiki._id} href={`/wiki/${wiki._id}`}>
-            <div className="p-4 border rounded-xl shadow hover:shadow-md transition cursor-pointer bg-white">
-              <h2 className="text-xl font-semibold">{wiki.title}</h2>
-              <p className="text-sm text-gray-600">
-                {wiki.category} • {new Date(wiki.createdAt).toLocaleDateString()}
-              </p>
-              <p className="mt-2 text-gray-700 line-clamp-2">{wiki.content}</p>
+            <div className="p-5 bg-white rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+              <h2 className="text-xl font-semibold mb-1 text-gray-800">{wiki.title}</h2>
+              <p className="text-sm text-gray-500 mb-2">{wiki.category} • {new Date(wiki.createdAt).toLocaleDateString()}</p>
+              <p className="text-gray-700 line-clamp-3">{wiki.content}</p>
             </div>
           </Link>
         ))}
-        {wikis.length === 0 && (
-          <p className="text-center text-gray-500">Nenhuma wiki encontrada</p>
-        )}
+        {wikis.length === 0 && <p className="text-center text-gray-500 col-span-full">Nenhuma wiki encontrada</p>}
       </div>
     </main>
   );
