@@ -1,18 +1,17 @@
-import clientPromise from "../../../lib/db";
+import { getDB } from "../../../lib/db";
 import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ ok: false });
 
   const { id, token } = req.body;
-  if (token !== process.env.ADMIN_TOKEN) return res.status(403).json({ ok: false, error: "Sem permissão" });
+  if (token !== process.env.ADMIN_TOKEN)
+    return res.status(403).json({ ok: false, error: "Sem permissão" });
 
-  const client = await clientPromise;
-  const db = client.db("wiki");
-
+  const db = await getDB();
   await db.collection("wikis").updateOne(
     { _id: new ObjectId(id) },
-    { $set: { approved: true } }
+    { $set: { status: "approved", slug: id } }
   );
 
   res.json({ ok: true });
