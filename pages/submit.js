@@ -49,3 +49,31 @@ export default function SubmitPage() {
         </select>
 
         <textarea placeholder="Conteúdo" value={content} onChange
+        ={(e) => setContent(e.target.value)}
+        rows={6}
+        className="border p-3 rounded-md shadow-sm resize-none focus:ring-2 focus:ring-blue-400"
+        required
+      />
+
+      <input
+        type="text"
+        placeholder="Autor (opcional)"
+        value={author}
+        onChange={(e) => setAuthor(e.target.value)}
+        className="border p-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
+      />
+
+      <button
+        type="submit"
+        className="bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 transition"
+      >
+        Enviar para revisão
+      </button>
+
+      {status && (
+        <p className="text-center text-gray-700 mt-2">{status}</p>
+      )}
+    </form>
+  </main>
+);
+}
