@@ -7,52 +7,66 @@ export default function WikiPage() {
   const [data, setData] = useState(null);
   const [notfound, setNotfound] = useState(false);
 
+  // primeira busca: lista + verificação
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const r = await fetch(`/api/wiki/list?q=&tag=`);
-      const j = await r.json();
-      if (j.ok) {
-        const item = (j.items || []).find(x => String(x._id) === id);
-        if (item) {
-          // busca conteúdo completo
-          const full = await fetch(`/api/wiki/pending?token=${encodeURIComponent("noop")}`); // não iremos usar aqui
+      try {
+        const r = await fetch(`/api/wiki/list?q=&tag=`);
+        const j = await r.json();
+        if (!j.ok) return setNotfound(true);
+
+        const item = (j.items || []).find((x) => String(x._id) === id);
+        if (!item) return setNotfound(true);
+
+        // segunda busca: documento completo
+        const full = await fetch(`/api/wiki/get?id=${id}`);
+        if (full.ok) {
+          const fullData = await full.json();
+          if (fullData.ok) {
+            setData(fullData.data);
+          } else {
+            setData(item); // fallback
+          }
+        } else {
+          setData(item); // fallback
         }
+      } catch (e) {
+        console.error("Erro ao carregar wiki:", e);
+        setNotfound(true);
       }
     })();
   }, [id]);
 
-  // versão simples: reusa a lista e faz uma nova chamada dedicada
-  useEffect(() => {
-    if (!id) return;
-    (async () => {
-      const r = await fetch(`/api/wiki/list?q=&tag=`);
-      const j = await r.json();
-      if (!j.ok) return setNotfound(true);
-      const item = (j.items || []).find(x => String(x._id) === id);
-      if (!item) return setNotfound(true);
+  if (notfound)
+    return (
+      <main className="p-6 text-center text-gray-600">
+        ❌ Wiki não encontrada
+      </main>
+    );
 
-      // busca documento completo via endpoint interno (rápido)
-      const full = await fetch(`/api/wiki/get?id=${id}`);
-      if (full.ok) {
-        const data = await full.json();
-        setData(data);
-      } else {
-        // fallback: mostra apenas título/categoria
-        setData(item);
-      }
-    })();
-  }, [id]);
-
-  if (notfound) return <main style={{ padding: 24 }}>Wiki não encontrada</main>;
-  if (!data) return <main style={{ padding: 24 }}>Carregando...</main>;
+  if (!data)
+    return (
+      <main className="p-6 text-center text-gray-600">
+        Carregando...
+      </main>
+    );
 
   return (
-    <main style={{ padding: 24, maxWidth: 900, margin: "0 auto", fontFamily: "system-ui, sans-serif" }}>
-      <h1>{data.title}</h1>
-      <p style={{ opacity: 0.8 }}>{data.category} • {new Date(data.createdAt).toLocaleString()}</p>
-      {data.author && <p><b>Autor:</b> {data.author}</p>}
-      <article style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{data.content}</article>
+    <main className="max-w-3xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-2">{data.title}</h1>
+      <p className="text-sm text-gray-500 mb-4">
+        {data.category} •{" "}
+        {new Date(data.createdAt).toLocaleString("pt-BR")}
+      </p>
+      {data.author && (
+        <p className="mb-4 text-gray-700">
+          <span className="font-semibold">Autor:</span> {data.author}
+        </p>
+      )}
+      <article className="prose max-w-none whitespace-pre-wrap leading-relaxed">
+        {data.content}
+      </article>
     </main>
   );
 }
